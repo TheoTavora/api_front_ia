@@ -1,10 +1,18 @@
 // servidor.js
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// configurações de caminho
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.post('/pergunta', async (req, res) => {
     const { pergunta } = req.body;
@@ -14,7 +22,7 @@ app.post('/pergunta', async (req, res) => {
     }
 
     try {
-        const resposta = await fetch('http://127.0.0.1:5000/responder', {
+        const resposta = await fetch('https://chatbotmovese-v1.onrender.com/responder', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ pergunta })

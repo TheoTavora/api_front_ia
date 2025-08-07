@@ -135,7 +135,7 @@
             mostrarDigitando();
             
             try {
-                const resposta = await fetch('http://localhost:3000/pergunta', {
+                const resposta = await fetch('/pergunta', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
