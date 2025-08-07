@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <title>Chatbot FAQ – Movese</title>
+</head>
+<style>
+       body {
+      font-family: Arial, sans-serif;
+      background: #333333;
+      display: flex;
+      align-items: center;
+      flex-direction: column;
+      width: 100%;
+      min-height: 100dvh;
+      padding: 40px;
+      overflow-x: hidden;
+    } body h2 {color: white;}
+    #chat {
+      width: 100%;
+      max-width: 400px;
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 0 10px #ccc;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    #pergunta {
+      padding-right: 0;
+      width: 97%;
+    }
+    .mensagem {
+      margin: 10px 0;
+    }
+    .user {
+      text-align: right;
+      color: #2a7ae2;
+    }
+    .bot {
+      text-align: left;
+      color: #555;
+    }
+    input, button {
+      padding: 10px;
+      margin-top: 10px;
+      width: 100%;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background: #2a7ae2;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+</style>
+<body>
+
+<h2>CHATBOT I.A PERSONALIZADO - I.A SEMÂNTICA</h2>
+    <div id="chat">
+        <h4>Faça uma pergunta</h4>
+        <div id="mensagens">
+            <div class="chat-vazio">
+                <small>Digite sua dúvida abaixo para eu respondê-lá!</small>
+            </div>
+        </div>
+        <div class="input-area">
+            <input type="text" id="pergunta" placeholder="Digite sua pergunta..." />
+            <button onclick="enviarPergunta()">Enviar</button>
+        </div>
+    </div>
+    <!-- <a href="../../chatbot/admin.php">Painel de perguntas</a> -->
+  
+  
+  <script>
+      // Suas funções originais
+      function adicionarMensagem(texto, classe) {
+        const div = document.createElement('div');
+          div.className = `mensagem ${classe}`;
+          div.textContent = texto;
+            
+            // Remove o estado vazio na primeira mensagem
+            const chatVazio = document.querySelector('.chat-vazio');
+            if (chatVazio) {
+                chatVazio.remove();
+            }
+            
+            document.getElementById('mensagens').appendChild(div);
+            
+            // Scroll para a última mensagem
+            const mensagens = document.getElementById('mensagens');
+            mensagens.scrollTop = mensagens.scrollHeight;
+        }
+
+        // Funções para mostrar digitação
+        function mostrarDigitando() {
+            const mensagens = document.getElementById('mensagens');
+            const digitandoDiv = document.createElement('div');
+            digitandoDiv.className = 'mensagem digitando';
+            digitandoDiv.id = 'digitando';
+            digitandoDiv.textContent = 'PawChat está digitando';
+            
+            mensagens.appendChild(digitandoDiv);
+            mensagens.scrollTop = mensagens.scrollHeight;
+        }
+
+        function removerDigitando() {
+            const digitando = document.getElementById('digitando');
+            if (digitando) {
+                digitando.remove();
+            }
+        }
+
+        // Sua função adaptada com indicador de digitação
+        async function enviarPergunta() {
+            const input = document.getElementById('pergunta');
+            const button = document.querySelector('button');
+            const pergunta = input.value.trim();
+            
+            if (!pergunta) return;
+            
+            // Adiciona mensagem do usuário
+            adicionarMensagem(pergunta, 'user');
+            input.value = '';
+            
+            // Desabilita botão e mostra loading
+            button.disabled = true;
+            button.classList.add('loading');
+            const textoOriginal = button.textContent;
+            button.textContent = '';
+            
+            // Mostra indicador de digitação
+            mostrarDigitando();
+            
+            try {
+                const resposta = await fetch('http://localhost:3000/pergunta', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ pergunta })
+            });
+                
+                const json = await resposta.json();
+                
+                // Remove indicador de digitação
+                removerDigitando();
+                
+                // Adiciona resposta do bot
+                adicionarMensagem(json.resposta || 'Erro ao responder.', 'bot');
+                
+            } catch (error) {
+                removerDigitando();
+                console.error('Erro na requisição:', error);
+                adicionarMensagem('Erro ao conectar com o servidor.', 'bot');
+            } finally {
+                // Reabilita botão
+                button.disabled = false;
+                button.classList.remove('loading');
+                button.textContent = textoOriginal;
+            }
+        }
+
+        // Enter para enviar
+        document.getElementById('pergunta').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                enviarPergunta();
+            }
+        });
+  </script>
+  </body>
